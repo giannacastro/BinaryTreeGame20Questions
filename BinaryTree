@@ -1,0 +1,136 @@
+import java.io.Serializable;
+import java.util.Scanner;
+
+public class BinaryTree implements Serializable {
+
+    //the root node for the binary tree
+    private BinaryTreeNode root;
+    //counter to keep track of the number of questions asked
+    private int questionCount;
+
+    public BinaryTree() {
+        //creates a binary tree with the initial questions and answers
+
+        //base question
+        root = new BinaryTreeNode("Is it an animal?");
+        //the left child answer
+        root.left = new BinaryTreeNode("dog");
+        //alternativly, the right child answer
+        root.right = new BinaryTreeNode("elephant");
+        //initializes the question count so that it starts from 0
+        questionCount = 0;
+    }
+
+    //method for playing the game
+    public void playGame() {
+        //scanner for user input
+        Scanner scanner = new Scanner(System.in);
+        //so that the current node starts from the root
+        BinaryTreeNode current = root;
+        //parent node for tracking and narrowing down possibilities
+        BinaryTreeNode parent = null;
+        //the users response
+        String response;
+
+        //loops until a guess is made or the maximum questions are asked
+        while (current != null && (current.left != null || current.right != null) && questionCount < 20) {
+            System.out.println(current.data); // Print current question
+            response = scanner.nextLine().toLowerCase(); // Read user response
+
+            //updates parent node
+            parent = current;
+
+            //navigates to the next node based on the users response
+            if (response.equals("y")) {
+                current = current.left; // Move left for "yes"
+            } else if (response.equals("n")) {
+                current = current.right; // Move right for "no"
+            } else {
+                System.out.println("Invalid response. Please enter 'y' or 'n'."); // Prompt for valid response
+            }
+            questionCount++; // Increment question count
+        }
+
+        //checks if a guess is made or if the maximum questions are asked
+        if (current != null) {
+            System.out.println("Is it a " + current.data + "? (y/n)"); // Make a guess
+            response = scanner.nextLine().toLowerCase(); // Read user response
+
+            if (response.equals("y")) {
+                System.out.println("Computer wins!"); // Computer wins if the guess is correct
+            } else {
+                handleIncorrectGuess(parent, current, scanner); // Handle incorrect guess
+            }
+        } else {
+            System.out.println("Game over! The computer couldn't guess your object."); // Maximum questions reached
+        }
+
+        System.out.println("Do you want to play again? (y/n)"); // Ask for replay
+        response = scanner.nextLine().toLowerCase(); // Read user response
+
+        if (response.equals("y")) {
+            questionCount = 0; // Reset question count for the new game
+            playGame(); // Start a new game
+        } else {
+            System.out.println("Thanks for playing!"); // End the game
+        }
+    }
+
+    //method to handle an incorrect guess and updates the binary tree
+    private void handleIncorrectGuess(BinaryTreeNode parent, BinaryTreeNode current, Scanner scanner) {
+        System.out.println("What is the correct answer?"); // Prompt for correct answer
+        String newAnswer = scanner.nextLine(); // Read user response
+
+        System.out.println("Please provide a yes/no question to distinguish " + newAnswer + " from " + current.data); // Prompt for new question
+        String newQuestion = scanner.nextLine(); // Read user response
+
+        //creates new nodes for the correct answer, old answer, and new question
+        BinaryTreeNode newAnswerNode = new BinaryTreeNode(newAnswer);
+        BinaryTreeNode oldAnswerNode = new BinaryTreeNode(current.data);
+        BinaryTreeNode newQuestionNode = new BinaryTreeNode(newQuestion);
+
+        System.out.println("For " + newAnswer + ", is the answer yes or no? (y/n)"); // Prompt for answer to new question
+        String response = scanner.nextLine().toLowerCase(); // Read user response
+
+        //updates the new question node based on the users response
+        if (response.equals("y")) {
+            newQuestionNode.left = newAnswerNode;
+            newQuestionNode.right = oldAnswerNode;
+        } else {
+            newQuestionNode.left = oldAnswerNode;
+            newQuestionNode.right = newAnswerNode;
+        }
+
+        //updates the parent node to point to the new question node
+        if (parent != null) {
+            if (parent.left == current) {
+                parent.left = newQuestionNode;
+            } else {
+                parent.right = newQuestionNode;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Welcome to the Twenty Questions game!"); // Welcome message
+        System.out.println("Think of an object, and I'll try to guess it."); // Prompt for the game
+        System.out.println("Let's start with the first question..."); // Starting message
+
+        BinaryTree binaryTree = new BinaryTree(); // Create a new instance of the game
+        binaryTree.playGame(); // Start playing the game
+    }
+
+    //binary tree node class
+    static class BinaryTreeNode implements Serializable {
+        String data; // Data stored in the node
+        BinaryTreeNode left; // Left child node
+        BinaryTreeNode right; // Right child node
+
+        //constructor to initialize the node with data
+        BinaryTreeNode(String data) {
+            this.data = data;
+            this.left = null;
+            this.right = null;
+        }
+    }
+}
